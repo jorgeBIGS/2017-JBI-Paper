@@ -17,7 +17,8 @@ import breast.preprocessing.PreprocessingTechnique;
 
 public class TestOptimizeForDatabase {
 	private static final String DATA = "data/original_immuno.csv";
-	private static final PreprocessingTechnique PREPROCESS = new AutoencodingPreprocessing(0.01, 2);
+	private static final PreprocessingTechnique PREPROCESS = new AutoencodingPreprocessing(
+			null, null);
 
 	public static void main(String[] args) throws Exception {
 		Map<String, List<Pair<Double, Double>>> mapMort = new HashMap<>();

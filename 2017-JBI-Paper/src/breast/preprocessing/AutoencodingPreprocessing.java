@@ -18,15 +18,15 @@ import weka.filters.unsupervised.attribute.Normalize;
 
 public class AutoencodingPreprocessing implements PreprocessingTechnique {
 
-	private static final int FILTER = MLPAutoencoder.FILTER_NORMALIZE;
-	private MLPAutoencoder filtro;
+	private static final Integer FILTER = MLPAutoencoder.FILTER_NORMALIZE;
+	private MLPAutoencoder autoencoder;
 	private Double lambda;
 	private Integer numFunctions;
 
 	public AutoencodingPreprocessing(Double lambd, Integer numFunc) {
 		lambda = lambd;
 		numFunctions = numFunc;
-		filtro = new MLPAutoencoder();
+		autoencoder = new MLPAutoencoder();
 	}
 
 	public void buildTechnique(Instances training) throws Exception {
@@ -38,22 +38,23 @@ public class AutoencodingPreprocessing implements PreprocessingTechnique {
 		copy.setClassIndex(-1);
 
 		if (lambda == null || numFunctions == null) {
+
 			Double min = Double.MAX_VALUE;
 			for (int n = 2; n <= copy.numAttributes() + 3; n += 3) {
 				for (double l = 0.001; l <= 0.03; l += 0.005) {
 					Map<String, List<Pair<Double, Double>>> map = new HashMap<>();
-					filtro.setFilterType(new SelectedTag(FILTER,
+					autoencoder.setFilterType(new SelectedTag(FILTER,
 							MLPAutoencoder.TAGS_FILTER));
-					filtro.setOutputInOriginalSpace(true);
-					filtro.setNumThreads(Runtime.getRuntime()
+					autoencoder.setOutputInOriginalSpace(true);
+					autoencoder.setNumThreads(Runtime.getRuntime()
 							.availableProcessors() - 1);
-					filtro.setPoolSize(Runtime.getRuntime()
+					autoencoder.setPoolSize(Runtime.getRuntime()
 							.availableProcessors() - 1);
-					filtro.setLambda(l);
-					filtro.setNumFunctions(n);
-					filtro.setUseCGD(true);
-					filtro.setInputFormat(copy);
-					Instances copy2 = Filter.useFilter(copy, filtro);
+					autoencoder.setLambda(l);
+					autoencoder.setNumFunctions(n);
+					autoencoder.setUseCGD(true);
+					autoencoder.setInputFormat(copy);
+					Instances copy2 = Filter.useFilter(copy, autoencoder);
 
 					Normalize normalizer = new Normalize();
 					normalizer.setScale(1.0);
@@ -83,14 +84,15 @@ public class AutoencodingPreprocessing implements PreprocessingTechnique {
 				}
 			}
 		}
-
-		filtro.setFilterType(new SelectedTag(FILTER, MLPAutoencoder.TAGS_FILTER));
-		filtro.setNumThreads(Runtime.getRuntime().availableProcessors() - 1);
-		filtro.setPoolSize(Runtime.getRuntime().availableProcessors() - 1);
-		filtro.setNumFunctions(numFunctions);
-		filtro.setLambda(lambda);
-		filtro.setOutputInOriginalSpace(true);
-		filtro.setInputFormat(copy);
+		autoencoder.setFilterType(new SelectedTag(FILTER,
+				MLPAutoencoder.TAGS_FILTER));
+		autoencoder
+				.setNumThreads(Runtime.getRuntime().availableProcessors() - 1);
+		autoencoder.setPoolSize(Runtime.getRuntime().availableProcessors() - 1);
+		autoencoder.setNumFunctions(numFunctions);
+		autoencoder.setLambda(lambda);
+		autoencoder.setOutputInOriginalSpace(true);
+		autoencoder.setInputFormat(copy);
 
 	}
 
@@ -101,8 +103,8 @@ public class AutoencodingPreprocessing implements PreprocessingTechnique {
 		copy.deleteAttributeAt(copy.numAttributes() - 1);
 		copy.deleteAttributeAt(copy.numAttributes() - 1);
 		copy.setClassIndex(-1);
-		
-		copy = Filter.useFilter(copy, filtro);
+
+		copy = Filter.useFilter(copy, autoencoder);
 
 		Normalize normalizer = new Normalize();
 		normalizer.setScale(1.0);
